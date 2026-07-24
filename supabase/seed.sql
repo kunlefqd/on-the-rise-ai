@@ -1,0 +1,5 @@
+-- PLACEHOLDER seed data.
+-- No schema/tables exist yet, so this file intentionally contains no
+-- statements. When tables are created, any seed rows added here must be
+-- clearly labeled as simulated/seeded data, per docs/ethical-data-policy.md,
+-- and must never be mistaken for real collected content.

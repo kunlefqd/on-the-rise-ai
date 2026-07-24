@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trendbaker.ai/schemas/trend-summary.schema.json",
+  "title": "TrendSummary",
+  "description": "A computed, scored trend derived from one or more normalized-content items, ready for display in the dashboard.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trend_name",
+    "category",
+    "trend_score",
+    "confidence",
+    "source_count",
+    "supporting_item_count",
+    "last_updated"
+  ],
+  "properties": {
+    "trend_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "enum": ["format", "flavour", "ingredient", "consumer_attribute"]
+    },
+    "trend_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall transparent trend score. Formula is not finalized; see docs/trend-scoring.md."
+    },
+    "growth_7d": {
+      "type": ["number", "null"],
+      "description": "Percentage change in trend signal over the trailing 7 days, if available."
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "source_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of distinct data sources contributing to this trend."
+    },
+    "supporting_item_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of normalized-content items supporting this trend."
+    },
+    "region": {
+      "type": ["string", "null"]
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
