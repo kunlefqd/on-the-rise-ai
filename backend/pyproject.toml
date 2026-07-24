@@ -12,6 +12,9 @@ dependencies = [
     "supabase>=2.5",
 ]
 
+[project.scripts]
+trendbaker-collect = "trendbaker.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.2",

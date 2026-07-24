@@ -8,11 +8,24 @@ settings they actually need and will fail with a clear error otherwise.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# The backend directory, resolved from this file so config loads regardless of
+# the current working directory: config.py -> trendbaker -> src -> backend.
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Later files win, so `.env.local` (optional local overrides) beats `.env`
+    # (the shared backend env). Real process env vars still take precedence over
+    # both. Frontend/Next.js keys live in `frontend/.env.local`, not here.
+    model_config = SettingsConfigDict(
+        env_file=(_BACKEND_DIR / ".env", _BACKEND_DIR / ".env.local"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     app_env: str = "development"
 
