@@ -8,7 +8,6 @@ import {
 } from "@/lib/trends";
 import type { TrendSummary } from "@/lib/types";
 import { CategoryBreakdown } from "./CategoryBreakdown";
-import { EthicsPanel } from "./EthicsPanel";
 import { GrowthComparison } from "./GrowthComparison";
 import { KpiCard } from "./KpiCard";
 import { TrendDetailPanel } from "./TrendDetailPanel";
@@ -157,8 +156,6 @@ export function Dashboard({ selectedTrend, onSelectTrend }: DashboardProps) {
         />
         <TrendDetailPanel trend={selectedSummary} detail={selectedDetail} />
       </div>
-
-      <EthicsPanel />
     </div>
   );
 }
