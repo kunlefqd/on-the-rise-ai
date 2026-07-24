@@ -1,5 +1,16 @@
 -- PLACEHOLDER seed data.
--- No schema/tables exist yet, so this file intentionally contains no
--- statements. When tables are created, any seed rows added here must be
--- clearly labeled as simulated/seeded data, per docs/ethical-data-policy.md,
--- and must never be mistaken for real collected content.
+--
+-- The shared schema (supabase/migrations/20260724101100_build_tables.sql)
+-- defines `terms`, `items`, `item_terms`, and the `term_week_stats`
+-- materialized view. No seed rows are added here yet:
+--   - `terms` (canonical trend concepts) is shared/cross-workstream taxonomy
+--     data, owned by whoever finalizes the trend-scoring/entity-extraction
+--     workstream, not seeded here.
+--   - Blog/RSS source configuration (name, website/feed URLs, enabled flag)
+--     lives in code for the MVP — see BLOG_SOURCES in
+--     backend/src/trendbaker/collectors/blog_rss.py — not in the database,
+--     since the shared schema has no dedicated sources-registry table.
+--
+-- Any seed rows added here in future must be clearly labeled as
+-- simulated/seeded per docs/ethical-data-policy.md, and must never be
+-- mistaken for real collected content.

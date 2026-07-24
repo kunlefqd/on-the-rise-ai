@@ -101,7 +101,40 @@ class SupabaseRepository:
         """
         self._get_client().rpc("refresh_term_week_stats").execute()
 
+    def update_item_body(self, item_id: str, body: str | None) -> None:
+        """Update only the `body` column of one `items` row, by id.
+
+        Every other column is left untouched, since the update payload only
+        ever contains `body`. Used to reprocess previously-stored rows (e.g.
+        stripping HTML that predates a normalization fix) without disturbing
+        anything else about them.
+        """
+        self._get_client().table("items").update({"body": body}).eq("id", item_id).execute()
+
     # ---------- reads ----------
+
+    def get_items_by_source(
+        self, source: str, fields: str = "id,body"
+    ) -> list[dict[str, Any]]:
+        """Read raw rows from `items` where source = `source`, selecting only `fields`.
+
+        Returns raw dicts rather than parsed Item models, since this is a
+        narrow column projection (e.g. just id+body for cleanup, or
+        id+title+body for tagging) rather than a full row read — Item
+        requires `source`, which a projection may omit.
+        """
+        resp = self._get_client().table("items").select(fields).eq("source", source).execute()
+        return resp.data or []
+
+    def get_terms(self) -> list[Term]:
+        """Read all rows from `terms`, parsed into Term models."""
+        resp = (
+            self._get_client()
+            .table("terms")
+            .select("id,slug,label,categories,created_at")
+            .execute()
+        )
+        return [Term.model_validate(row) for row in (resp.data or [])]
 
     def fetch_term_week_stats(self) -> list[TermWeekStat]:
         """Read the weekly rollups powering the trend engine and dashboard."""
