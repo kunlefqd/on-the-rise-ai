@@ -1,6 +1,17 @@
 # Supabase
 
-This directory holds the Supabase project's migrations, views, and seed data. **No schema has been created yet** — this is a placeholder structure for the Supabase workstream to build on.
+This directory holds the Supabase project's migrations, views, and seed data.
+
+## Current schema
+
+One shared migration (`20260724101100_build_tables.sql`, on `dev`) covers every source — see [docs/db-schema.md](../docs/db-schema.md) for the full column-level reference. There is no per-source migration or per-source table set:
+
+- **`terms`** — canonical trend concepts (taxonomy).
+- **`items`** — one row per collected piece of content (YouTube video, blog article, etc.), discriminated by the `source` column (`youtube` | `blog` | `retailer`). Blog/RSS articles are `source = 'blog'` rows in this same table, not a separate `blog_articles` table.
+- **`item_terms`** — many-to-many mention bridge between `items` and `terms`.
+- **`term_week_stats`** — a materialized view rolling item/engagement stats up by term, category, source, region, and week. Must be refreshed via the `refresh_term_week_stats()` RPC after each collection run — it does not update automatically on insert.
+
+**Known gap:** this migration does not enable Row Level Security on `terms`, `items`, or `item_terms`, and a materialized view like `term_week_stats` cannot have RLS at all (which is why it shows as "Unrestricted" in the Supabase Table Editor — the underlying tables having no RLS is the same reason it also gets flagged there). Until RLS policies are added and reviewed, treat all four as **not safe to expose to `anon`/`authenticated` roles**; only trusted server-side (service-role) code should read or write them.
 
 ## Migrations
 

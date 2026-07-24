@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trendbaker.ai/schemas/blog-article.schema.json",
+  "title": "BlogArticle",
+  "description": "The exact shape returned by BlogRssCollector.collect() / parse_rss_entries() (backend/src/trendbaker/collectors/blog_rss.py) — one row per Blog/RSS article, matching the shared `items` table column-for-column (supabase/migrations/20260724101100_build_tables.sql, see docs/db-schema.md). There is no separate blog-specific database table; this contract documents the collector's output before it is upserted into `items`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source",
+    "source_id",
+    "url",
+    "title",
+    "body",
+    "author",
+    "published_at",
+    "region",
+    "views",
+    "likes",
+    "comments_count",
+    "collected_at",
+    "raw"
+  ],
+  "properties": {
+    "source": {
+      "const": "blog",
+      "description": "Matches the shared items.source discriminator (youtube | blog | retailer). Always 'blog' for this collector — not per-feed."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The RSS/Atom guid (RSS) or id (Atom) when available, otherwise 'url-' followed by a deterministic sha256 hex digest of the article URL. Combined with source, this is the upsert key (unique(source, source_id) on items)."
+    },
+    "url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "The article's own URL. Null if the feed entry had no link."
+    },
+    "title": {
+      "type": ["string", "null"],
+      "maxLength": 500,
+      "description": "Null if the feed entry had no title."
+    },
+    "body": {
+      "type": ["string", "null"],
+      "maxLength": 1000,
+      "description": "A short feed-provided excerpt/summary only (RSS <description> or Atom <summary>), truncated to 1000 characters by the collector. Never the full article body — a full-content field such as RSS's <content:encoded> is never read."
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The configured source's publication name (e.g. 'King Arthur Baking Blog'), matching how the shared items.author column is documented for every source ('channel / blog / brand', not a personal byline). Always set by the collector from its source configuration — never null, and not an individual writer's byline."
+    },
+    "published_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Parsed from RSS <pubDate> (RFC 822) or Atom <updated>/<published> (ISO 8601). Null if missing or unparseable."
+    },
+    "region": {
+      "type": "null",
+      "description": "Always null in the current collector — no region concept exists for Blog/RSS sources yet. Populating this is a deliberate future contract change, not a silent addition."
+    },
+    "views": {
+      "const": 0,
+      "description": "Always 0, never a real value. RSS/Atom feeds do not reliably expose engagement metrics, but trendbaker.models.Item types views/likes/comments_count as plain int (default 0), not int | None, so the collector cannot represent 'unavailable' as null under the current shared model. This is a known limitation, not a measured value — see the module docstring in trendbaker.collectors.blog_rss for the recommended (small, backward-compatible) model fix to loosen these three fields to int | None."
+    },
+    "likes": {
+      "const": 0,
+      "description": "Always 0. See `views`."
+    },
+    "comments_count": {
+      "const": 0,
+      "description": "Always 0. See `views`."
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this collector run fetched the article. Always set."
+    },
+    "raw": {
+      "type": "object",
+      "description": "Feed metadata that doesn't belong as a top-level items column. Always includes feed_slug and feed_url (the machine slug and feed URL of the configured BlogSource — the human-readable name is carried in the top-level `author` field instead). RSS entries additionally include guid/link/pub_date; Atom entries include id/link/updated. Never contains full article body content.",
+      "properties": {
+        "feed_slug": {
+          "type": "string",
+          "description": "The configured BlogSource's machine slug, e.g. 'king_arthur_baking'."
+        },
+        "feed_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The RSS/Atom feed URL this article was collected from."
+        }
+      },
+      "required": ["feed_slug", "feed_url"]
+    }
+  }
+}
