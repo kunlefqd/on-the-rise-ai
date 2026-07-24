@@ -46,7 +46,7 @@ export function TrendTable({
       <div className="panel__header">
         <h2 className="panel__title">Top trends</h2>
         <p className="panel__subtitle">
-          Ranked bakery signals from demo YouTube summaries
+          Ranked bakery signals from YouTube and blog sources
         </p>
       </div>
       <div className="table-wrap">
@@ -81,7 +81,7 @@ export function TrendTable({
                   type="button"
                   onClick={() => onSort("supporting_video_count")}
                 >
-                  Supporting videos{sortIndicator("supporting_video_count")}
+                  Videos / Blogs{sortIndicator("supporting_video_count")}
                 </button>
               </th>
               <th scope="col">Region</th>
@@ -125,7 +125,9 @@ export function TrendTable({
                       {trend.confidence}
                     </span>
                   </td>
-                  <td>{trend.supporting_video_count}</td>
+                  <td>
+                    {trend.supporting_video_count} / {trend.supporting_blog_count}
+                  </td>
                   <td>{trend.query_region_code}</td>
                 </tr>
               );

@@ -23,14 +23,18 @@ export interface TrendSummary {
   confidence: ConfidenceLevel;
   confidence_score: number;
   supporting_video_count: number;
+  supporting_blog_count: number;
   query_region_code: string;
   last_updated: string;
 }
 
-export interface SupportingVideo {
+export type ItemSource = "youtube" | "blog" | "retailer";
+
+export interface SupportingItem {
+  source: ItemSource;
   title: string;
-  channel_title: string;
-  video_url: string;
+  author: string;
+  url: string;
   published_at: string;
   view_count: number | null;
   like_count: number | null;
@@ -42,5 +46,5 @@ export interface TrendDetail {
   trend_name: string;
   summary: string;
   suggested_rd_opportunity: string;
-  supporting_videos: SupportingVideo[];
+  supporting_items: SupportingItem[];
 }

@@ -1,30 +1,32 @@
 "use client";
 
 import { useCopilotReadable } from "@copilotkit/react-core";
-import { getTrendDetail, getTrendSummaries } from "@/lib/trends";
+import type { TrendDetail, TrendSummary } from "@/lib/types";
 
 interface DashboardCopilotContextProps {
   selectedTrend: string | null;
+  trends: TrendSummary[];
+  detail: TrendDetail | null;
 }
 
 /**
- * Makes dashboard trend data readable by the CopilotKit agent.
+ * Makes real dashboard trend data (fetched by AppShell from services/api,
+ * backed by Supabase) readable by the CopilotKit agent.
  */
 export function DashboardCopilotContext({
   selectedTrend,
+  trends,
+  detail,
 }: DashboardCopilotContextProps) {
-  const trends = getTrendSummaries();
-  const detail = selectedTrend ? getTrendDetail(selectedTrend) : null;
-
   useCopilotReadable({
     description:
-      "TrendBaker dashboard bakery trend summaries (demo data until live YouTube pipeline is connected). Includes trend scores, growth, confidence, supporting video counts, and region.",
+      "TrendBaker dashboard bakery trend summaries, sourced live from Supabase (term_leaderboard) via the FastAPI service. Includes trend scores, confidence, supporting video counts, and category. growth_24h/growth_7d are currently always null — not yet computed upstream.",
     value: trends,
   });
 
   useCopilotReadable({
     description:
-      "Currently selected trend on the TrendBaker dashboard, including R&D opportunity and supporting video evidence when available.",
+      "Currently selected trend on the TrendBaker dashboard, including a data-derived summary and supporting video evidence when available.",
     value: {
       selectedTrend,
       detail,

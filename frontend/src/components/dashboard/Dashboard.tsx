@@ -1,12 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  getDataLastUpdated,
-  getTrendDetail,
-  getTrendSummaries,
-} from "@/lib/trends";
-import type { TrendSummary } from "@/lib/types";
+import { getDataLastUpdated } from "@/lib/trends";
+import type { TrendDetail, TrendSummary } from "@/lib/types";
 import { CategoryBreakdown } from "./CategoryBreakdown";
 import { GrowthComparison } from "./GrowthComparison";
 import { KpiCard } from "./KpiCard";
@@ -52,33 +48,45 @@ function formatTimestamp(iso: string): string {
   });
 }
 
-const TRENDS = getTrendSummaries();
-
 interface DashboardProps {
+  trends: TrendSummary[];
+  trendsLoading: boolean;
+  trendsError: string | null;
   selectedTrend: string | null;
   onSelectTrend: (trendName: string) => void;
+  selectedDetail: TrendDetail | null;
+  detailLoading: boolean;
 }
 
-export function Dashboard({ selectedTrend, onSelectTrend }: DashboardProps) {
+export function Dashboard({
+  trends,
+  trendsLoading,
+  trendsError,
+  selectedTrend,
+  onSelectTrend,
+  selectedDetail,
+  detailLoading,
+}: DashboardProps) {
   const [sortKey, setSortKey] = useState<SortKey>("trend_score");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  const sortedTrends = sortTrends(TRENDS, sortKey, sortDir);
+  const sortedTrends = sortTrends(trends, sortKey, sortDir);
   const selectedSummary =
-    TRENDS.find((t) => t.trend_name === selectedTrend) ?? null;
-  const selectedDetail = selectedTrend
-    ? getTrendDetail(selectedTrend)
-    : null;
+    trends.find((t) => t.trend_name === selectedTrend) ?? null;
 
-  const lastUpdated = getDataLastUpdated(TRENDS);
-  const topTrend = [...TRENDS].sort((a, b) => b.trend_score - a.trend_score)[0];
+  const lastUpdated = getDataLastUpdated(trends);
+  const topTrend = [...trends].sort((a, b) => b.trend_score - a.trend_score)[0];
   const avgScore =
-    TRENDS.reduce((sum, t) => sum + t.trend_score, 0) / (TRENDS.length || 1);
-  const highConfidenceCount = TRENDS.filter(
+    trends.reduce((sum, t) => sum + t.trend_score, 0) / (trends.length || 1);
+  const highConfidenceCount = trends.filter(
     (t) => t.confidence === "high",
   ).length;
-  const totalVideos = TRENDS.reduce(
+  const totalVideos = trends.reduce(
     (sum, t) => sum + t.supporting_video_count,
+    0,
+  );
+  const totalBlogPosts = trends.reduce(
+    (sum, t) => sum + t.supporting_blog_count,
     0,
   );
 
@@ -91,26 +99,41 @@ export function Dashboard({ selectedTrend, onSelectTrend }: DashboardProps) {
     setSortDir(key === "trend_name" ? "asc" : "desc");
   };
 
+  const statusLabel = trendsError
+    ? "Data error"
+    : trendsLoading
+      ? "Loading…"
+      : "Live data";
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="dashboard-header__brand">
           <p className="dashboard-header__product">TrendBaker AI</p>
           <p className="dashboard-header__subtitle">
-            YouTube-powered bakery trend intelligence
+            YouTube- and blog-powered bakery trend intelligence
           </p>
         </div>
         <div className="dashboard-header__meta">
-          <span className="status-pill">Demo data</span>
+          <span className="status-pill">{statusLabel}</span>
           <p className="dashboard-header__updated">
-            Last updated: {formatTimestamp(lastUpdated)}
+            {lastUpdated
+              ? `Last updated: ${formatTimestamp(lastUpdated)}`
+              : "Last updated: —"}
           </p>
         </div>
       </header>
 
-      <div className="demo-banner" role="status">
-        Demo data — awaiting live YouTube pipeline
-      </div>
+      {trendsError ? (
+        <div className="demo-banner" role="status">
+          Couldn&apos;t reach the trend API ({trendsError}). Is{" "}
+          <code>uvicorn services.api.main:app</code> running on port 8000?
+        </div>
+      ) : trendsLoading ? (
+        <div className="demo-banner" role="status">
+          Loading live trend data…
+        </div>
+      ) : null}
 
       <section className="kpi-grid" aria-label="Key metrics">
         <KpiCard
@@ -125,7 +148,7 @@ export function Dashboard({ selectedTrend, onSelectTrend }: DashboardProps) {
         <KpiCard
           label="Average trend score"
           value={avgScore.toFixed(1)}
-          hint={`${TRENDS.length} tracked trends`}
+          hint={`${trends.length} tracked trends`}
         />
         <KpiCard
           label="High confidence trends"
@@ -133,16 +156,21 @@ export function Dashboard({ selectedTrend, onSelectTrend }: DashboardProps) {
           hint="Confidence level = high"
         />
         <KpiCard
-          label="Supporting videos"
+          label="YouTube links"
           value={String(totalVideos)}
-          hint="Across all demo trends"
+          hint="Across all tracked trends"
+        />
+        <KpiCard
+          label="Blog links"
+          value={String(totalBlogPosts)}
+          hint="Across all tracked trends"
         />
       </section>
 
       <div className="charts-grid">
-        <TrendScoreBars trends={TRENDS} />
-        <CategoryBreakdown trends={TRENDS} />
-        <GrowthComparison trends={TRENDS} />
+        <TrendScoreBars trends={trends} />
+        <CategoryBreakdown trends={trends} />
+        <GrowthComparison trends={trends} />
       </div>
 
       <div className="main-grid">
@@ -154,7 +182,11 @@ export function Dashboard({ selectedTrend, onSelectTrend }: DashboardProps) {
           onSort={handleSort}
           onSelect={onSelectTrend}
         />
-        <TrendDetailPanel trend={selectedSummary} detail={selectedDetail} />
+        <TrendDetailPanel
+          trend={selectedSummary}
+          detail={selectedDetail}
+          loading={detailLoading}
+        />
       </div>
     </div>
   );

@@ -1,31 +1,53 @@
 /**
  * Data access layer for dashboard trend summaries.
  *
- * TODO: Replace mock returns with a backend endpoint or Supabase-approved
- * read path (likely public.vw_top_youtube_trends via FastAPI or a reviewed
- * read-only policy). Do not connect the UI directly to Supabase yet.
+ * Fetches from the FastAPI service in services/api/, which reads real
+ * Supabase data (term_leaderboard / item_terms / items). Never falls back
+ * to mock data on failure — callers surface the error instead, so a real
+ * outage isn't mistaken for a working demo.
  */
 
-import {
-  MOCK_LAST_UPDATED,
-  MOCK_TREND_DETAILS,
-  MOCK_TREND_SUMMARIES,
-} from "./mock-trends";
 import type { TrendDetail, TrendSummary } from "./types";
 
-export function getTrendSummaries(): TrendSummary[] {
-  // MOCK: returns static demo data — not live YouTube pipeline output.
-  return [...MOCK_TREND_SUMMARIES];
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+export async function fetchTrendSummaries(options?: {
+  region?: string;
+  limit?: number;
+}): Promise<TrendSummary[]> {
+  const url = new URL("/api/v1/trends", API_BASE);
+  if (options?.region) url.searchParams.set("region", options.region);
+  if (options?.limit) url.searchParams.set("limit", String(options.limit));
+
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    throw new Error(`Failed to fetch trends (${res.status})`);
+  }
+  return res.json();
 }
 
-export function getTrendDetail(trendName: string): TrendDetail | null {
-  // MOCK: detail lookup from in-memory demo dataset.
-  return MOCK_TREND_DETAILS[trendName] ?? null;
+export async function fetchTrendDetail(
+  trendName: string,
+): Promise<TrendDetail | null> {
+  const url = new URL(
+    `/api/v1/trends/${encodeURIComponent(trendName)}`,
+    API_BASE,
+  );
+
+  const res = await fetch(url.toString());
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch trend detail (${res.status})`);
+  }
+  return res.json();
 }
 
-export function getDataLastUpdated(trends: TrendSummary[]): string {
-  if (trends.length === 0) return MOCK_LAST_UPDATED;
-  return trends.reduce((latest, trend) =>
-    trend.last_updated > latest ? trend.last_updated : latest,
-  trends[0].last_updated);
+export function getDataLastUpdated(trends: TrendSummary[]): string | null {
+  if (trends.length === 0) return null;
+  return trends.reduce(
+    (latest, trend) =>
+      trend.last_updated > latest ? trend.last_updated : latest,
+    trends[0].last_updated,
+  );
 }

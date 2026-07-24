@@ -3,6 +3,7 @@ import type { TrendDetail, TrendSummary } from "@/lib/types";
 interface TrendDetailPanelProps {
   trend: TrendSummary | null;
   detail: TrendDetail | null;
+  loading?: boolean;
 }
 
 function formatCount(value: number | null): string {
@@ -18,7 +19,17 @@ function formatDate(iso: string): string {
   });
 }
 
-export function TrendDetailPanel({ trend, detail }: TrendDetailPanelProps) {
+const SOURCE_LABEL: Record<string, string> = {
+  youtube: "YouTube",
+  blog: "Blog",
+  retailer: "Retailer",
+};
+
+export function TrendDetailPanel({
+  trend,
+  detail,
+  loading = false,
+}: TrendDetailPanelProps) {
   if (!trend) {
     return (
       <section className="panel detail-panel">
@@ -27,8 +38,8 @@ export function TrendDetailPanel({ trend, detail }: TrendDetailPanelProps) {
           <p className="panel__subtitle">Select a trend in the table</p>
         </div>
         <p className="detail-panel__empty">
-          Choose a row to inspect why the signal is rising and which videos
-          support it.
+          Choose a row to inspect why the signal is rising and which
+          videos or blog posts support it.
         </p>
       </section>
     );
@@ -44,7 +55,9 @@ export function TrendDetailPanel({ trend, detail }: TrendDetailPanelProps) {
         </p>
       </div>
 
-      {detail ? (
+      {loading ? (
+        <p className="detail-panel__empty">Loading detail…</p>
+      ) : detail ? (
         <>
           <div className="detail-block">
             <h3>Why it is trending</h3>
@@ -55,25 +68,28 @@ export function TrendDetailPanel({ trend, detail }: TrendDetailPanelProps) {
             <p>{detail.suggested_rd_opportunity}</p>
           </div>
           <div className="detail-block">
-            <h3>Supporting video evidence</h3>
+            <h3>Supporting evidence</h3>
             <ul className="evidence-list">
-              {detail.supporting_videos.map((video) => (
-                <li key={video.video_url} className="evidence-item">
+              {detail.supporting_items.map((item) => (
+                <li key={item.url} className="evidence-item">
+                  <span className={`source-chip source-chip--${item.source}`}>
+                    {SOURCE_LABEL[item.source] ?? item.source}
+                  </span>
                   <a
-                    href={video.video_url}
+                    href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="evidence-item__title"
                   >
-                    {video.title}
+                    {item.title}
                   </a>
                   <p className="evidence-item__meta">
-                    {video.channel_title} · {formatDate(video.published_at)} ·{" "}
-                    {formatCount(video.view_count)} views ·{" "}
-                    {formatCount(video.like_count)} likes ·{" "}
-                    {formatCount(video.comment_count)} comments
+                    {item.author} · {formatDate(item.published_at)} ·{" "}
+                    {formatCount(item.view_count)} views ·{" "}
+                    {formatCount(item.like_count)} likes ·{" "}
+                    {formatCount(item.comment_count)} comments
                   </p>
-                  <p className="evidence-item__reason">{video.evidence_reason}</p>
+                  <p className="evidence-item__reason">{item.evidence_reason}</p>
                 </li>
               ))}
             </ul>
@@ -81,7 +97,7 @@ export function TrendDetailPanel({ trend, detail }: TrendDetailPanelProps) {
         </>
       ) : (
         <p className="detail-panel__empty">
-          No detail mock record found for this trend.
+          No detail found for this trend.
         </p>
       )}
     </section>
