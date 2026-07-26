@@ -67,10 +67,6 @@ uvicorn trendbaker.api.main:app --reload   # run the API locally
 
 Copy `.env.example` to `.env` and fill in real values locally. Never commit `.env`. `SUPABASE_SERVICE_ROLE_KEY` and `YOUTUBE_API_KEY` are server-side secrets and must never be exposed to frontend code or via `NEXT_PUBLIC_*` variables — see the comments in `.env.example` for details. Features that depend on a missing setting fail with a clear configuration error at the point of use rather than at startup.
 
-## Current status
-
-This is the initial project scaffold: a minimal Next.js app, a minimal FastAPI backend with placeholder collectors/repository/scoring modules, shared data contracts, and Supabase directory structure with no schema yet. No real data collection, database schema, scoring formula, or AI assistant has been implemented.
-
 ## Chatbot / MCP rule
 
-Chatbot and MCP (AI assistant tool access) development begins **only after** the data pipeline — collection → normalized-content → Supabase → scoring → trend-summary → dashboard — is working end to end with real data. Do not start on the assistant before that.
+Chatbot and MCP (AI assistant tool access) development was implemted **after** the data pipeline — collection → normalized-content → Supabase → scoring → trend-summary → dashboard — was working end to end with real data.
