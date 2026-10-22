@@ -1,0 +1,54 @@
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Node.js / Next.js ---
+node_modules/
+.next/
+out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.pnp.*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+
+# --- Test / coverage output ---
+coverage/
+.coverage
+htmlcov/
+
+# --- Supabase local ---
+supabase/.branches/
+supabase/.temp/
+.supabase/
+
+# --- VS Code ---
+.vscode/*
+!.vscode/extensions.json
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Logs / misc caches ---
+*.log
+.cache/
+.env.example

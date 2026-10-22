@@ -1,0 +1,26 @@
+{
+  "name": "fgfhackathon26",
+  "version": "1.0.0",
+  "description": "TrendBaker AI collects permitted public bakery-related signals, preserves historical engagement metrics, identifies emerging bakery formats, flavours, ingredients, and consumer attributes, calculates transparent trend scores, and displays the findings in a dashboard. An AI assistant will later be able to query the results through restricted, read-only tools.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harshikamboj/FGFHackathon26.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/harshikamboj/FGFHackathon26/issues"
+  },
+  "homepage": "https://github.com/harshikamboj/FGFHackathon26#readme",
+  "devDependencies": {
+    "supabase": "^2.109.1"
+  }
+}
